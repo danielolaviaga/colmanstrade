@@ -749,3 +749,27 @@ html main .pz-host.dash-hero{padding-bottom:calc(var(--lz) + 52px)}
 #adw .sup-th{margin-bottom:14px}
 @media (max-width:600px){.sps{border-radius:6px 18px 6px 18px}.sps-nav{width:34px;height:34px;font-size:19px}.sps-tag{font-size:10px;padding:7px 10px}.sps-go{display:none}}
 
+
+/* ===== shop toolbar on phones: not pinned, compact ===== */
+/* Desktop keeps the pinned toolbar. On phones (and short landscape screens) the header is already pinned,
+   so pinning the search, sort and every category row as well left only a sliver for the products. */
+@media (max-width:800px),(max-height:520px){
+  main[data-v=shop] .sec{position:static;z-index:auto;padding:4px 0 10px;margin:0 0 6px;gap:10px;flex-wrap:wrap}
+  /* categories: one swipeable row instead of three wrapped rows */
+  main[data-v=shop] .sec .chips{flex:1 1 100%;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-snap-type:x proximity;margin-inline:-20px;padding:2px 20px 4px}
+  main[data-v=shop] .sec .chips::-webkit-scrollbar{display:none}
+  main[data-v=shop] .sec .chips button{flex:none;white-space:nowrap;padding:8px 14px;scroll-snap-align:start}
+  /* search and sort share one row */
+  main[data-v=shop] .sec .srch{flex:1 1 0;min-width:0;width:auto}
+  main[data-v=shop] .sec .srt{flex:0 0 42%;min-width:0;max-width:42%;padding-inline:14px;text-overflow:ellipsis}
+}
+@media (max-width:600px){main[data-v=shop] .sec .chips{margin-inline:-12px;padding-inline:12px}}
+
+/* ===== light / dark switch animation ===== */
+/* Circle reveal (View Transitions API). The reveal itself is animated from script.js (themeSwap). */
+html.theme-vt::view-transition-old(root),html.theme-vt::view-transition-new(root){animation:none;mix-blend-mode:normal}
+html.theme-vt::view-transition-old(root){z-index:1}
+html.theme-vt::view-transition-new(root){z-index:2}
+/* Fallback for browsers without View Transitions: fade the colours */
+html.theme-fade,html.theme-fade *,html.theme-fade *::before,html.theme-fade *::after{transition:background-color .5s ease,color .5s ease,border-color .5s ease,fill .5s ease,stroke .5s ease,box-shadow .5s ease!important}
+@media (prefers-reduced-motion:reduce){html.theme-fade,html.theme-fade *,html.theme-fade *::before,html.theme-fade *::after{transition:none!important}}

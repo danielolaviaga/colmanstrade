@@ -127,10 +127,10 @@ ph=n=>`<div class="ph"><h1>${n[0]}</h1><p class="mute">${n[1]}</p></div>`,
 st2=(i,l,v)=>`<div class="card stat"><span class="ic">${ICO(i)}</span><div><small>${l}</small><b>${v}</b></div></div>`,
 th=o=>o.items.map(i=>`<span class="tp"><span class="tile mini">${prod(i.p)?pic(prod(i.p)):'📦'}</span><em>${i.q}</em></span>`).join(''),
 FL=ST.slice(0,4),NX={Pending:'Start processing',Processing:'Mark ready',Ready:'Complete'},
-heroH=()=>{const L=HL(),p=L[hi]||L[0];return `<i class="hbar" onanimationend="setHi((hi+1)%HL().length)"></i><i class="orb" data-sy="-.2" style="--mk:46"></i><h1 class="t1" style="--mk:-12" aria-label="Streetwear"><span style="--i:0">S</span><span style="--i:1">T</span><span style="--i:2">R</span><span style="--i:3">E</span><span style="--i:4">E</span><span style="--i:5">T</span><span style="--i:6">W</span><span style="--i:7">E</span><span style="--i:8">A</span><span style="--i:9">R</span></h1><div class="t2">NEW DROP</div><button class="btn cta" onclick="chg('${p.id}',1);toast('Added to cart')">Add to cart · ${peso(p.price)}</button><img class="mdl" data-sy=".015" style="--mk:26" src="${IMG[p.hero]}" alt="${esc(p.name)}"><div class="cards" data-sy="-.01" style="--mk:-10">${L.map((x,i)=>`<button class="c" aria-pressed="${i===hi}" aria-label="Show ${esc(x.name)}" onclick="setHi(${i})"><img src="${IMG[x.hero]}" alt=""></button>`).join('')}</div>`},
+heroH=()=>{window.__hiEl=0;const L=HL(),p=L[hi]||L[0];return `<i class="hbar"></i><i class="orb" data-sy="-.2" style="--mk:46"></i><h1 class="t1" style="--mk:-12" aria-label="Streetwear"><span style="--i:0">S</span><span style="--i:1">T</span><span style="--i:2">R</span><span style="--i:3">E</span><span style="--i:4">E</span><span style="--i:5">T</span><span style="--i:6">W</span><span style="--i:7">E</span><span style="--i:8">A</span><span style="--i:9">R</span></h1><div class="t2">NEW DROP</div><button class="btn cta" onclick="chg('${p.id}',1);toast('Added to cart')">Add to cart · ${peso(p.price)}</button><img class="mdl" data-sy=".015" style="--mk:26" src="${IMG[p.hero]}" alt="${esc(p.name)}"><div class="cards" data-sy="-.01" style="--mk:-10">${L.map((x,i)=>`<button class="c" aria-pressed="${i===hi}" aria-label="Show ${esc(x.name)}" onclick="setHi(${i})"><img src="${IMG[x.hero]}" alt=""></button>`).join('')}</div>`},
 setHi=i=>{hi=i;$('#heroIn').innerHTML=heroH();tick()};
 const HL=()=>['h1f','t2f','h3f'].map(k=>S.products.find(p=>p.hero===k)).filter(Boolean),N=['All','Deals',...CF.slice(1)],
-tm=()=>{const d=document.documentElement,n=d.dataset.theme==='light'?'dark':'light';d.dataset.theme=n;try{localStorage.setItem('cm-theme',n)}catch(e){}},
+tm=ev=>{const d=document.documentElement,n=d.dataset.theme==='light'?'dark':'light';themeSwap(()=>{d.dataset.theme=n;try{localStorage.setItem('cm-theme',n)}catch(e){}},ev)},
 gocat=n=>{cf=n;nav('shop')},
 footH=cu=>FOOT(cu);
 /* EDIT ME: replace these placeholder contact details and social links with your real ones */
@@ -222,7 +222,7 @@ NAV.admin=[...NAV.staff,['users','Users']];NAV.guest=[['home','Home'],['shop','S
 const nav=k=>{view=k;go();scrollTo(0,0)};
 function go(){const u=me(),n=NAV[u.role],au=view==='login'&&u.role==='guest';if(!au&&!n.some(x=>x[0]===view))view=n[0][0];tg(0);const cu=u.role==='customer'||u.role==='guest',sh=cu&&(view==='home'||view==='shop');
 if(au){$('#app').innerHTML=V.login();scrollTo(0,0);return}
-$('#app').innerHTML=`${sh?'<div class="top"><span>Pickup · Delivery · Deals</span><span>New drops every week</span><span>IG · FB · TikTok</span></div>':''}<header><div class="brand"><b>COLMANS</b></div><nav>${n.map(([k,l])=>`<button ${k===view?'aria-current="page"':''} onclick="nav('${k}')">${l}</button>`).join('')}</nav>${u.role==='guest'?'<button class="btn sm" onclick="nav(\'login\')">Sign in</button>':`<div class="who"><b>${esc(u.name)}</b><small>${u.role}</small></div><button class="btn ghost sm" onclick="out()">Sign out</button>`}<button class="tgl" aria-label="Toggle light and dark theme" onclick="tm()">◐</button>${sh?`<button class="cartpill" onclick="tg(1)">Cart <span id="cc">${cn()} items</span></button>`:''}</header><main>${V[view]()}</main>${cu?`<div class="scrim" onclick="tg(0)"></div><aside class="drawer" id="cart">${cartH()}</aside>`:''}${footH(cu)}`;pre=pres='';fx();typeof adSync==='function'&&adSync()}
+$('#app').innerHTML=`${sh?'<div class="top"><span>Pickup · Delivery · Deals</span><span>New drops every week</span><span>IG · FB · TikTok</span></div>':''}<header><div class="brand"><b>COLMANS</b></div><nav>${n.map(([k,l])=>`<button ${k===view?'aria-current="page"':''} onclick="nav('${k}')">${l}</button>`).join('')}</nav>${u.role==='guest'?'<button class="btn sm" onclick="nav(\'login\')">Sign in</button>':`<div class="who"><b>${esc(u.name)}</b><small>${u.role}</small></div><button class="btn ghost sm" onclick="out()">Sign out</button>`}<button class="tgl" aria-label="Toggle light and dark theme" onclick="tm(event)">◐</button>${sh?`<button class="cartpill" onclick="tg(1)">Cart <span id="cc">${cn()} items</span></button>`:''}</header><main>${V[view]()}</main>${cu?`<div class="scrim" onclick="tg(0)"></div><aside class="drawer" id="cart">${cartH()}</aside>`:''}${footH(cu)}`;pre=pres='';fx();typeof adSync==='function'&&adSync()}
 
 /* ===== script 2: admin ===== */
 /* ================= ADMIN WORKSPACE (staff + admin) =================
@@ -663,7 +663,7 @@ function build(host,shop){let it;try{it=items(shop)}catch(e){return}if(!it.lengt
 const st=document.createElement('div');st.className='pz';st.innerHTML=it.map((p,i)=>slide(p,i,shop)).join('')+`<div class="pz-dots">${it.map((_,i)=>`<button aria-label="Show poster ${i+1}"${i?'':' class="on"'}></button>`).join('')}</div>`;host.prepend(st);if(!(host.nextElementSibling&&host.nextElementSibling.classList.contains('pz-orb'))){const o=document.createElement('button');o.className='orbtn pz-orb';o.setAttribute('aria-label',shop?'Open cart':'Process orders');o.innerHTML=shop?CART:LIST;o.onclick=()=>{if(shop){try{tg(1)}catch(_){}}else{const q=host.querySelector('.dh-btn');if(q)q.click()}};host.after(o)}
 const sl=[...st.querySelectorAll('.pz-sl')],dt=[...st.querySelectorAll('.pz-dots button')];let k=0;
 const show=n=>{k=n;sl.forEach((x,j)=>x.classList.toggle('on',j===n));dt.forEach((x,j)=>x.classList.toggle('on',j===n));host.dataset.tone=sl[n].dataset.t};dt.forEach((b,j)=>b.onclick=()=>show(j));
-if(sl.length>1&&!matchMedia('(prefers-reduced-motion:reduce)').matches){const tm=setInterval(()=>{if(!st.isConnected)return clearInterval(tm);if(!host.matches(':hover'))show((k+1)%sl.length)},6500)}}
+if(sl.length>1){const tm=setInterval(()=>{if(!st.isConnected)return clearInterval(tm);if(!host.matches(':hover'))show((k+1)%sl.length)},6500)}}
 const run=()=>document.querySelectorAll('.dash-hero:not(.pz-host),main[data-v=shop] .ph:not(.pz-host),main[data-v=mine] .ph:not(.pz-host)').forEach(h=>build(h,!h.classList.contains('dash-hero')));
 document.addEventListener('click',e=>{const a=e.target.closest('[data-add]');if(a){chg(a.dataset.add,1);toast('Added to cart');setTimeout(()=>{try{tg(1)}catch(_){}},250);return}
 const v=e.target.closest('[data-view]');if(v){const id=v.dataset.view;let c=document.querySelector(`.card.prod[data-pid="${id}"]`);if(!c){c=document.createElement('div');c.className='card prod';c.dataset.pid=id;c.hidden=true;document.body.appendChild(c);setTimeout(()=>c.remove(),60)}c.click()}});
@@ -828,3 +828,56 @@ function supSlider(){
   setInterval(()=>{const t=trk();if(!t||spsPaused||document.hidden||t.children.length<2||Date.now()-spsLast<6000||t.matches(':hover')||t.contains(document.activeElement))return;go(idx(t)+1)},5000);
 })();
 
+/* ===== Home hero auto-slide =====
+   Moves to the next product every 6 seconds. It is driven by this timer (not by the CSS progress bar), so it also works when the
+   device has "reduce motion" turned on. Pauses while the mouse is over the hero or the tab is hidden; clicking a card restarts the 6s. */
+(()=>{let last=performance.now();
+  setInterval(()=>{
+    const now=performance.now(),dt=Math.min(now-last,500);last=now;
+    const h=document.getElementById('hero');
+    if(!h||!h.isConnected||h.closest('#doorbg')||document.hidden||h.matches(':hover'))return;
+    window.__hiEl=(window.__hiEl||0)+dt;
+    if(window.__hiEl>=6000)setHi((hi+1)%HL().length);
+  },100);
+})();
+
+
+/* ===== Light / dark switch animation =====
+   Circle reveal that grows from the toggle button (View Transitions API).
+   Browsers without it get a soft colour fade instead. Reduced-motion users get an instant switch. */
+function themeSwap(apply,ev){
+  const root=document.documentElement;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){apply();return}
+  const t=ev&&ev.currentTarget,btn=t&&t.getBoundingClientRect?t:document.querySelector('.tgl');
+  if(btn&&btn.animate)btn.animate([{rotate:'0deg'},{rotate:'360deg'}],{duration:600,easing:'cubic-bezier(.2,.8,.2,1)'});
+  if(typeof document.startViewTransition==='function'){
+    const r=btn?btn.getBoundingClientRect():null,
+      x=r?r.left+r.width/2:innerWidth-40,y=r?r.top+r.height/2:40,
+      end=Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y));
+    root.classList.add('theme-vt');
+    let vt;
+    try{vt=document.startViewTransition(apply)}catch(e){root.classList.remove('theme-vt');apply();return}
+    vt.ready.then(()=>root.animate(
+      {clipPath:[`circle(0px at ${x}px ${y}px)`,`circle(${end}px at ${x}px ${y}px)`]},
+      {duration:700,easing:'cubic-bezier(.4,0,.2,1)',pseudoElement:'::view-transition-new(root)'})).catch(()=>{});
+    vt.finished.finally(()=>root.classList.remove('theme-vt'));
+    return;
+  }
+  root.classList.add('theme-fade');
+  apply();
+  clearTimeout(themeSwap.t);
+  themeSwap.t=setTimeout(()=>root.classList.remove('theme-fade'),650);
+}
+
+/* ===== Shop: on phones the category chips scroll sideways, so keep the active one in view after a re-render ===== */
+(()=>{
+  const reveal=()=>document.querySelectorAll('main .sec .chips').forEach(c=>{
+    const a=c.querySelector('[aria-pressed=true]');
+    if(!a||c.scrollWidth<=c.clientWidth)return;
+    const x=a.getBoundingClientRect().left-c.getBoundingClientRect().left+c.scrollLeft;
+    c.scrollLeft=Math.max(0,x-(c.clientWidth-a.offsetWidth)/2);
+  });
+  /* the page tags <main data-v="shop"> a moment after each render, which is when the chips become a sideways row */
+  const app=document.getElementById('app');
+  if(app&&window.MutationObserver)new MutationObserver(reveal).observe(app,{subtree:true,attributes:true,attributeFilter:['data-v']});
+})();
