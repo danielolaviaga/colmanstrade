@@ -2,6 +2,8 @@
    All <script> blocks from the original page, in the original order.
    Loaded as a classic (non-module) script so inline onclick="..." handlers still find these globals. */
 
+/* Motion note: reduced-motion checks are forced off so animations and effects play on desktop too. */
+
 /* ===== script 1: main-1 ===== */
 const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),
 peso=n=>'₱'+(+n).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2}),
@@ -533,7 +535,7 @@ go();
 
 /* ===== script 4: main-4 ===== */
 /* hero choreography: one passive scroll listener -> one rAF -> a few CSS variables (--p pin progress, --q cover progress) + snow */
-(()=>{const rm=matchMedia('(prefers-reduced-motion:reduce)');let h,hh=0,hd,ho,af,afTop=0,raf=0,lastY=0,V=0;
+(()=>{const rm=({matches:false});let h,hh=0,hd,ho,af,afTop=0,raf=0,lastY=0,V=0;
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),Y=()=>window.pageYOffset||document.documentElement.scrollTop||document.body.scrollTop||0;
 const find=()=>{hd=document.querySelector('header');document.documentElement.style.setProperty('--hdr',(hd?hd.offsetHeight:65)+'px');h=document.getElementById('hero');hh=h?h.offsetHeight:0;ho=document.querySelector('.hold');af=document.querySelector('.after');afTop=af?af.getBoundingClientRect().top+Y():0};
 const bar=document.createElement('i');bar.id='pgbar';bar.setAttribute('aria-hidden','true');document.body.appendChild(bar);
@@ -570,7 +572,7 @@ const app=document.getElementById('app');if(app)new MutationObserver(enh).observ
 
 /* ===== script 6: qv ===== */
 /* product viewer: the card's photo zooms into a detail panel (FLIP via Web Animations) and zooms back on close */
-(()=>{const rm=matchMedia('(prefers-reduced-motion:reduce)'),EASE='cubic-bezier(.2,.8,.2,1)',dur=ms=>rm.matches?Math.round(ms*.55):ms;
+(()=>{const rm=({matches:false}),EASE='cubic-bezier(.2,.8,.2,1)',dur=ms=>rm.matches?Math.round(ms*.55):ms;
 const DESC={'discipline oversized tee':'Black oversized tee with a small DISCIPLINE mark on the chest and a full-back statue print. Relaxed, boxy fit for everyday wear.','blindfold king hoodie':'Black hoodie with SUPREME lettering on the front and a crowned, blindfolded figure across the back. Heavyweight streetwear cut.','focus samurai hoodie':'Black hoodie with a small FOCUS mark on the chest and a kneeling samurai in red flames across the back.','black pullover hoodie':'Classic black pullover hoodie with a kangaroo pocket, a drawstring hood and a small chest logo.','white essential tee':'Clean white crew-neck tee with a small chest logo. An easy everyday layer.','faded graphic tee':'Washed charcoal tee with a bold star graphic on the chest. A lived-in, faded look.','beige zip-up hoodie':'Beige hoodie with a front pocket and a drawstring hood. A neutral layer that goes with everything.','wide-leg denim jeans':'Light-wash wide-leg jeans with a relaxed, straight fall.','white low-top sneakers':'All-white low-top sneakers with a cushioned sole. A clean look that goes with everything.','black and white high-tops':'High-top sneakers in black and white with a bold contrast panel.','black canvas skate shoes':'Black canvas skate shoes with white laces and a side stripe on a flat sole.','beige slides':'Easy beige slides with a moulded footbed for slip-on comfort.','black wayfarer sunglasses':'Classic black wayfarer sunglasses with dark lenses.','clear frame glasses':'Lightweight clear-frame glasses with a clean, minimal shape.','black baseball cap':'Black baseball cap with an embroidered front logo and a curved brim.','off-white baseball cap':'Off-white baseball cap with an embroidered front logo and a curved brim.','silver chain bracelet':'Silver-tone chunky chain bracelet.','silver pendant necklace':'Silver-tone chain with a rectangular cross pendant.','beaded cross bracelet':'Black beaded bracelet with a small silver cross charm.','black digital watch':'Rugged black digital watch with a bold dial and a wide strap.','black leather belt':'Black leather belt with a silver buckle.','black leather wallet':'Slim black leather bifold wallet with a small metal logo.','black backpack':'Black everyday backpack with a front pocket and two zip compartments.','cream shoulder bag':'Cream shoulder bag with a slim top handle and a small metal plate detail.','wireless earbuds':'Wireless earbuds that come with a compact charging case.','over-ear headphones':'Black over-ear headphones with cushioned ear cups.','smartphone with black case':'Smartphone in a matte black case with a triple-camera back.','smartphone pro (graphite)':'Graphite smartphone with a triple-camera system and a full-screen display.','gaming laptop 15-inch':'15-inch gaming laptop built for games and for work.','wireless gaming mouse':'Wireless gaming mouse with a lightweight shell.','rgb mechanical keyboard':'Compact mechanical keyboard with RGB backlighting.','wireless game controller':'White wireless game controller with a comfortable grip.','portable speaker (black)':'Portable wireless speaker in black with a rugged fabric finish.','portable speaker (white)':'Portable wireless speaker in white with a rugged fabric finish.','action camera':'Compact action camera with a front display, made for filming on the move.','mirrorless camera':'Mirrorless camera with a zoom lens, for sharp photos and video.','charger and usb-c cable':'Wall charger with a white USB-C cable.','power bank 10,000mah':'10,000mAh power bank to top up your phone on the go.','gaming mouse pad (black)':'Black cloth gaming mouse pad with a smooth surface.','extended desk mat (black)':'Extra-wide black desk mat with room for your keyboard and mouse.','foldable laptop stand':'Foldable black laptop stand that lifts your screen and packs flat.','gaming chair':'Black racing-style gaming chair with a high back.','compact printer':'Compact desktop printer for documents at home or in the shop.','compact keyboard (lilac)':'Compact lilac keyboard with a clean, colourful layout.','24-inch monitor':'24-inch monitor with a slim frame.','desktop soundbar':'Slim black soundbar that fits under your monitor.','vr headset':'Virtual-reality headset that comes with two hand controllers.','canned iced coffee':'Chilled canned iced coffee, ready to drink.','potato chips 60g':'Crunchy potato chips in a 60 g pack.','milk chocolate bar':'Smooth milk chocolate bar.','bottled water 500ml':'500 ml bottled drinking water.','tissue roll (4 pack)':'Soft tissue rolls in a pack of four.','toothbrush and paste set':'Toothbrush and toothpaste set for daily care.','aa batteries (4 pack)':'Pack of four AA batteries.','compact umbrella':'Compact umbrella that folds small to fit in your bag.'};
 const CATD={'Clothing':'Streetwear for everyday wear.','Footwear':'Comfortable footwear for daily use.','Accessories':'A finishing touch for any outfit.','Bags':'Carry your essentials in style.','Gadgets':'Tech for work, play and everything in between.','Groceries':'Everyday groceries, snacks and drinks.','Essentials':'Daily essentials you always need.'};
 let st=null;
@@ -635,7 +637,7 @@ document.documentElement.addEventListener('pointerleave',hide)})();
 
 /* ===== script 8: dash-js ===== */
 /* dashboard: count-up numbers and the bar, chart and donut grow-in, once per render */
-(()=>{const rm=matchMedia('(prefers-reduced-motion:reduce)');
+(()=>{const rm=({matches:false});
 const run=()=>{const d=document.querySelector('.dash');if(!d||d.dataset.run)return;d.dataset.run='1';
 d.querySelectorAll('[data-count]').forEach(el=>{const n=+el.dataset.count,money=el.dataset.kind==='money',f=v=>money?peso(v):Math.round(v),t0=performance.now(),D=rm.matches?500:1200;el.textContent=f(0);
 const tick=t=>{const k=Math.min(1,(t-t0)/D),e=1-Math.pow(1-k,3);el.textContent=f(n*e);if(k<1)requestAnimationFrame(tick)};requestAnimationFrame(tick)});
@@ -643,7 +645,7 @@ requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add('go')))};
 const app=document.getElementById('app');if(app)new MutationObserver(run).observe(app,{childList:true});run()})();
 
 /* ===== script 9: main-9 ===== */
-document.addEventListener('click',e=>{const b=e.target.closest('[data-car]'),c=document.getElementById('car');if(b&&c)c.scrollBy({left:c.firstElementChild.offsetWidth*+b.dataset.car*1.1,behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'})});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-car]'),c=document.getElementById('car');if(b&&c)c.scrollBy({left:c.firstElementChild.offsetWidth*+b.dataset.car*1.1,behavior:({matches:false}).matches?'auto':'smooth'})});
 document.addEventListener('scroll',e=>{const c=e.target;if(c&&c.id==='car'){const m=c.scrollWidth-c.clientWidth;c.parentElement.style.setProperty('--p',m>0?c.scrollLeft/m:0)}},true);
 /* Featured slider: always start in the middle, each time the home page is drawn */
 (()=>{const mid=()=>{const c=document.getElementById('car');if(!c||c.dataset.mid)return;const m=c.scrollWidth-c.clientWidth;if(m<=0)return;c.dataset.mid=1;c.scrollTo({left:m/2,behavior:'instant'});c.parentElement.style.setProperty('--p',.5)};new MutationObserver(mid).observe(document.getElementById('app'),{childList:true,subtree:true});mid()})();
@@ -694,7 +696,7 @@ addEventListener('resize',()=>sched(150));if(document.fonts&&document.fonts.read
    Sign in  -> left half slides in from the left, right half from the right, they meet in the middle and puff a little smoke.
    Back to shop (or after a successful sign-in) -> the two halves slide apart again, like a sliding door opening onto the page. */
 (()=>{
-const DUR=900,EASE='cubic-bezier(.55,0,.25,1)',RM=matchMedia('(prefers-reduced-motion:reduce)');
+const DUR=900,EASE='cubic-bezier(.55,0,.25,1)',RM=({matches:false});
 const q=s=>document.querySelector(s),rnd=(a,b)=>a+Math.random()*(b-a);
 const mk=(css,cls)=>{const d=document.createElement('div');if(cls)d.className=cls;d.style.cssText=css||'';return d};
 let live=[],nodes=[],timers=[],wasLogin=false;
@@ -847,7 +849,7 @@ function supSlider(){
    Browsers without it get a soft colour fade instead. Reduced-motion users get an instant switch. */
 function themeSwap(apply,ev){
   const root=document.documentElement;
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches){apply();return}
+  if(({matches:false}).matches){apply();return}
   const t=ev&&ev.currentTarget,btn=t&&t.getBoundingClientRect?t:document.querySelector('.tgl');
   if(btn&&btn.animate)btn.animate([{rotate:'0deg'},{rotate:'360deg'}],{duration:600,easing:'cubic-bezier(.2,.8,.2,1)'});
   if(typeof document.startViewTransition==='function'){
