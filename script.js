@@ -124,11 +124,18 @@ products:[['Discipline Oversized Tee','👕','Clothing',699,899,6,6,'mk_dis_f','
 ["Herock Farming Boots (Olive)","🥾","Footwear",1299,0,14,5,"hk_bt_o","","","","herock-boots","Olive","Knee-high rubber boots with a deep-lugged sole and HEROCK branding on the shaft."],
 ["Herock Farming Boots (Black)","🥾","Footwear",1299,0,12,5,"hk_bt_b","","","","herock-boots","Black","Knee-high rubber boots with a deep-lugged sole and HEROCK branding on the shaft."]].map((a,i)=>({id:'p'+(i+1),name:a[0],e:a[1],cat:a[2],price:a[3],was:a[4],stock:a[5],min:a[6],img:a[7],img2:a[8],hero:a[9],hero2:a[10],grp:a[11],col:a[12],desc:a[13]})).filter(p=>p.name),
 suppliers:[{id:'s1',name:'Urban Thread Apparel',contact:'Luis Tan',phone:'0917 555 0142'},{id:'s2',name:'Metro Convenience Wholesale',contact:'Grace Lim',phone:'0928 555 0199'},{id:'s3',name:'VOID',contact:'',phone:''},{id:'s4',name:'Herock Farm Equipments',contact:'',phone:''}],
-orders:[{id:'ORD-1001',type:'retail',party:'Maria Santos',items:[{p:'p4',q:1,pr:1499},{p:'p10',q:1,pr:2499}],status:'Completed',ts:D(5)},{id:'ORD-1002',type:'retail',party:'Maria Santos',items:[{p:'p16',q:1,pr:499},{p:'p49',q:3,pr:55}],status:'Pending',ts:D(1)},{id:'TRD-1003',type:'trade',party:'Sunrise Sari-Sari Store',items:[{p:'p51',q:40,pr:35}],status:'Processing',ts:D(2)}],
-purchases:[{id:'PO-1004',s:'s2',p:'p50',q:200,cost:30,status:'Ordered',ts:D(1)}]});
+orders:[{id:'ORD-1001',type:'retail',party:'Maria Santos',items:[{p:'p4',q:1,pr:1499},{p:'p10',q:1,pr:2499}],status:'Completed',ts:D(5),smp:1},{id:'ORD-1002',type:'retail',party:'Maria Santos',items:[{p:'p16',q:1,pr:499},{p:'p49',q:3,pr:55}],status:'Pending',ts:D(1),smp:1},{id:'TRD-1003',type:'trade',party:'Sunrise Sari-Sari Store',items:[{p:'p51',q:40,pr:35}],status:'Processing',ts:D(2),smp:1}],
+purchases:[{id:'PO-1004',s:'s2',p:'p50',q:200,cost:30,status:'Ordered',ts:D(1),smp:1}]});
 let S;try{S=JSON.parse(localStorage.getItem('colmans7'))}catch(e){}
 if(!S){try{S=JSON.parse(localStorage.getItem('colmans6'))}catch(e){}}
 S=S||seed();
+/* Starter demo records: the 3 starter orders and the starter purchase order used to carry no demo flag, so "Remove demo" left
+   them behind in Orders, Trade, Records and the Dashboard statistics. Flag them as demo now. If the demo was already removed
+   earlier (no sample orders left), finish that clean-up so everything shows 0. Real orders and purchases are never touched. */
+{const SD_O=['ORD-1001','ORD-1002','TRD-1003'],SD_P=['PO-1004'];let ch=0;S.orders=S.orders||[];S.purchases=S.purchases||[];
+S.orders.forEach(o=>{if(SD_O.includes(o.id)&&!o.smp){o.smp=1;ch=1}});S.purchases.forEach(x=>{if(SD_P.includes(x.id)&&!x.smp){x.smp=1;ch=1}});
+if(S.smpDone&&!S.orders.some(o=>o.smp&&!SD_O.includes(o.id))&&(S.orders.some(o=>o.smp)||S.purchases.some(x=>x.smp))){S.orders=S.orders.filter(o=>!o.smp);S.purchases=S.purchases.filter(x=>!x.smp);ch=1}
+if(ch){try{localStorage.setItem('colmans7',JSON.stringify(S))}catch(e){}}}
 S.products.forEach(p=>{if(p.cat==='Snacks & Drinks')p.cat='Groceries'});
 if(!S.suppliers.some(s=>/\bvoid\b/i.test(s.name)))S.suppliers.push({id:S.suppliers.some(s=>s.id==='s3')?'s'+Date.now():'s3',name:'VOID',contact:'',phone:''});
 if(!S.suppliers.some(s=>/\bherock\b/i.test(s.name)))S.suppliers.push({id:S.suppliers.some(s=>s.id==='s4')?'s'+Date.now():'s4',name:'Herock Farm Equipments',contact:'',phone:''});
@@ -345,7 +352,7 @@ if(s==='Cancelled'){t2+=(20+R()*400)*6e4;log.push({s:'Cancelled',ts:Math.min(t2,
 out.push({type:trade?'trade':'retail',party:trade?pick(C2):pick(C1),items,status:s,ts,log,smp:1})}
 out.sort((a,b)=>a.ts-b.ts).forEach(o=>{o.id=nid(o.type==='trade'?'TRD':'ORD')});return out}
 function adSample(n){S.orders.push(...mkSample(S,n));S.orders.sort((a,b)=>b.ts-a.ts);save();adRefresh();adNote(`${n} sample orders added.`)}
-function adUnsample(){const k=S.orders.filter(o=>o.smp).length;S.orders=S.orders.filter(o=>!o.smp);AS.o.sel=[];AS.t.sel=[];save();adRefresh();adNote(k?`${k} sample orders removed.`:'There were no sample orders.')}
+function adUnsample(){const k=S.orders.filter(o=>o.smp).length,kp=S.purchases.filter(x=>x.smp).length;S.orders=S.orders.filter(o=>!o.smp);S.purchases=S.purchases.filter(x=>!x.smp);S.smpDone=1;AS.o.sel=[];AS.t.sel=[];save();adRefresh();adNote(k||kp?`Demo data removed: ${pl(k,'order')}${kp?` and ${pl(kp,'purchase')}`:''}.`:'There was no demo data.')}
 function adReset(){const m=S.me;S=seed();S.me=m;S.orders.push(...mkSample(S,34));S.smpDone=1;S.orders.sort((a,b)=>b.ts-a.ts);AS.cfm='';save();adRefresh();adNote('Demo data reset.')}
 
 /* ---------- document-level events: click a card to open it, keyboard, undo, selection ---------- */
@@ -425,7 +432,7 @@ set_('adtsum',`<span>${q} × ${peso(u)} <s>${peso(p.price)}</s></span><b>${peso(
 
 /* dashboard: the page is your own Dashboard design. Its cards now open the filtered pages and panels; the demo-data strip sits underneath */
 const adGo=(pg,tab)=>{const p=tab?{tab,q:''}:{};if(pg==='orders'&&tab)Object.assign(p,{range:'all',type:'all',sort:tab==='active'||ACT.includes(tab)?'old':'new'});if(pg==='records'&&tab)p.range='all';adJump(pg,p)};
-function demoStrip(){const smp=S.orders.filter(o=>o.smp).length;return `<div class="ad-demo" id="addemo"><div class="grow"><b>Demo data</b> · ${smp?pl(smp,'sample order')+' mixed in, so you can try search, filters and bulk actions.':'No sample orders right now.'}</div><button class="btn ghost sm" onclick="adSample(30)">Add 30 sample orders</button>${smp?'<button class="btn ghost sm" onclick="adUnsample()">Remove sample orders</button>':''}${AS.cfm==='reset'?`<span>Reset everything?</span><button class="btn danger sm" onclick="adReset()">Yes, reset</button><button class="btn ghost sm" onclick="adDemoCfm('')">No</button>`:`<button class="btn ghost sm" onclick="adDemoCfm('reset')">Reset demo data</button>`}</div>`}
+function demoStrip(){const smp=S.orders.filter(o=>o.smp).length,smpP=S.purchases.filter(x=>x.smp).length;return `<div class="ad-demo" id="addemo"><div class="grow"><b>Demo data</b> · ${smp||smpP?pl(smp,'sample order')+(smpP?' and '+pl(smpP,'sample purchase'):'')+' mixed in, so you can try search, filters and bulk actions.':'No demo data right now.'}</div><button class="btn ghost sm" onclick="adSample(30)">Add 30 sample orders</button>${smp||smpP?'<button class="btn ghost sm" onclick="adUnsample()">Remove demo data</button>':''}${AS.cfm==='reset'?`<span>Reset everything?</span><button class="btn danger sm" onclick="adReset()">Yes, reset</button><button class="btn ghost sm" onclick="adDemoCfm('')">No</button>`:`<button class="btn ghost sm" onclick="adDemoCfm('reset')">Reset demo data</button>`}</div>`}
 function adDemoCfm(v){AS.cfm=v;const e=document.getElementById('addemo');if(e)e.outerHTML=demoStrip()}
 V.dashboard=()=>DASH()+demoStrip();
 
@@ -938,17 +945,18 @@ let p=null,open=false;
 /* Demo data: three sizes of sample orders. Picking one replaces the current demo, so it never piles up. Staff and admin only. */
 const DEMOS=[['Demo 1',15],['Demo 2',40],['Demo 3',100]];
 const demoOk=()=>{try{const r=me().role;return r==='staff'||r==='admin'}catch(e){return false}};
-const demoCount=()=>{try{return S.orders.filter(o=>o.smp).length}catch(e){return 0}};
+const demoOrders=()=>{try{return S.orders.filter(o=>o.smp).length}catch(e){return 0}};
+const demoCount=()=>{try{return demoOrders()+S.purchases.filter(x=>x.smp).length}catch(e){return 0}};
 const demoAdd=i=>{const d=DEMOS[i-1];if(!d||!demoOk())return;
   S.orders=S.orders.filter(o=>!o.smp);S.orders.push(...mkSample(S,d[1]));S.orders.sort((a,b)=>b.ts-a.ts);S.smpDone=1;
   AS.o.sel=[];AS.t.sel=[];save();adRefresh();adNote(`${d[0]} added: ${d[1]} sample orders.`);sync()};
 const demoRm=()=>{if(!demoOk())return;adUnsample();sync()};
 const demoSync=()=>{
   const d=p&&p.querySelector('[data-fxdemo]');if(!d)return;
-  const ok=demoOk(),n=ok?demoCount():0;
-  d.querySelector('[data-demost]').textContent=ok?(n?pl(n,'demo order'):'Demo is off'):'';
-  d.querySelector('[data-demonote]').textContent=ok?'Fill Orders, Trade and Records with sample orders so you can try search, filters and bulk actions. Demo orders never change stock.':'Sign in as staff or admin to add or remove demo data.';
-  d.querySelectorAll('[data-demo]').forEach(b=>{const z=DEMOS[b.dataset.demo-1][1];b.disabled=!ok;b.setAttribute('aria-pressed',ok&&n===z?'true':'false')});
+  const ok=demoOk(),n=ok?demoCount():0,no=ok?demoOrders():0,np=n-no;
+  d.querySelector('[data-demost]').textContent=ok?(n?pl(no,'demo order')+(np?' · '+pl(np,'demo purchase'):''):'Demo is off'):'';
+  d.querySelector('[data-demonote]').textContent=ok?'Fill Orders, Trade and Records with sample orders so you can try search, filters and bulk actions. Demo orders never change stock. Remove demo clears all demo orders, purchases and records, so Statistics go back to zero.':'Sign in as staff or admin to add or remove demo data.';
+  d.querySelectorAll('[data-demo]').forEach(b=>{const z=DEMOS[b.dataset.demo-1][1];b.disabled=!ok;b.setAttribute('aria-pressed',ok&&no===z?'true':'false')});
   d.querySelector('[data-demorm]').disabled=!ok||!n;
 };
 const build=()=>{
