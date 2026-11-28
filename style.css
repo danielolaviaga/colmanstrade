@@ -776,3 +776,7 @@ html.theme-vt::view-transition-new(root){z-index:2}
 /* Fallback for browsers without View Transitions: fade the colours */
 html.theme-fade,html.theme-fade *,html.theme-fade *::before,html.theme-fade *::after{transition:background-color .5s ease,color .5s ease,border-color .5s ease,fill .5s ease,stroke .5s ease,box-shadow .5s ease!important}
 
+
+/* ===== hero hides once the page has slid fully over it ===== */
+/* The pinned hero stays behind the page. At the very bottom its lower edge and loading bar used to peek out under the last section. */
+.hero{opacity:clamp(0,calc((1 - var(--q,0))*1000),1)}
