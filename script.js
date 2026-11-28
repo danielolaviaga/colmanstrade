@@ -935,6 +935,22 @@ const ROWS=[
   ['art','Background artwork','Hero scenery and the rough title texture']];
 const PRE=[['full','Full','Everything on'],['reduced','Reduced','No motion'],['minimal','Minimal','Lightest']];
 let p=null,open=false;
+/* Demo data: three sizes of sample orders. Picking one replaces the current demo, so it never piles up. Staff and admin only. */
+const DEMOS=[['Demo 1',15],['Demo 2',40],['Demo 3',100]];
+const demoOk=()=>{try{const r=me().role;return r==='staff'||r==='admin'}catch(e){return false}};
+const demoCount=()=>{try{return S.orders.filter(o=>o.smp).length}catch(e){return 0}};
+const demoAdd=i=>{const d=DEMOS[i-1];if(!d||!demoOk())return;
+  S.orders=S.orders.filter(o=>!o.smp);S.orders.push(...mkSample(S,d[1]));S.orders.sort((a,b)=>b.ts-a.ts);S.smpDone=1;
+  AS.o.sel=[];AS.t.sel=[];save();adRefresh();adNote(`${d[0]} added: ${d[1]} sample orders.`);sync()};
+const demoRm=()=>{if(!demoOk())return;adUnsample();sync()};
+const demoSync=()=>{
+  const d=p&&p.querySelector('[data-fxdemo]');if(!d)return;
+  const ok=demoOk(),n=ok?demoCount():0;
+  d.querySelector('[data-demost]').textContent=ok?(n?pl(n,'demo order'):'Demo is off'):'';
+  d.querySelector('[data-demonote]').textContent=ok?'Fill Orders, Trade and Records with sample orders so you can try search, filters and bulk actions. Demo orders never change stock.':'Sign in as staff or admin to add or remove demo data.';
+  d.querySelectorAll('[data-demo]').forEach(b=>{const z=DEMOS[b.dataset.demo-1][1];b.disabled=!ok;b.setAttribute('aria-pressed',ok&&n===z?'true':'false')});
+  d.querySelector('[data-demorm]').disabled=!ok||!n;
+};
 const build=()=>{
   p=document.createElement('div');p.id='fxp';p.className='fxp';p.hidden=true;
   p.setAttribute('role','dialog');p.setAttribute('aria-labelledby','fxt');
@@ -942,10 +958,18 @@ const build=()=>{
 <p class="fxs">Turn graphics and effects down if the site feels slow or busy. Saved on this device.</p>
 <div class="fxseg" role="group" aria-label="Quick presets">${PRE.map(([k,t,d])=>`<button type="button" data-fxp="${k}" aria-pressed="false"><b>${t}</b><small>${d}</small></button>`).join('')}</div>
 <div class="fxlist">${ROWS.map(([k,t,d])=>`<label class="fxrow"><span class="fxl"><b>${t}</b><small>${d}</small></span><input type="checkbox" role="switch" data-fxk="${k}"><i class="fxsw" aria-hidden="true"></i></label>`).join('')}</div>
-<div class="fxf"><span data-fxs></span><button type="button" data-fxr>Reset to Full</button></div>`;
+<div class="fxf"><span data-fxs></span><button type="button" data-fxr>Reset to Full</button></div>
+<div class="fxdemo" data-fxdemo>
+<div class="fxdh"><b>Demo data</b><span data-demost></span></div>
+<p class="fxs" data-demonote></p>
+<div class="fxseg" role="group" aria-label="Add demo">${DEMOS.map(([t,n],i)=>`<button type="button" data-demo="${i+1}" aria-pressed="false"><b>${t}</b><small>${n} orders</small></button>`).join('')}</div>
+<div class="fxdf"><span>Picking a demo replaces the current one.</span><button type="button" data-demorm>Remove demo</button></div>
+</div>`;
   document.body.appendChild(p);
   p.addEventListener('click',e=>{
-    const t=e.target.closest('[data-fxp],[data-fxr],[data-fxc]');if(!t)return;
+    const t=e.target.closest('[data-fxp],[data-fxr],[data-fxc],[data-demo],[data-demorm]');if(!t)return;
+    if(t.dataset.demo){demoAdd(+t.dataset.demo);return}
+    if(t.hasAttribute('data-demorm')){demoRm();return}
     if(t.dataset.fxp)FX.preset(t.dataset.fxp);
     else if(t.hasAttribute('data-fxr'))FX.preset('full');
     else close(true)});
@@ -957,6 +981,7 @@ const sync=()=>{
   p.querySelectorAll('[data-fxk]').forEach(i=>{i.checked=!!s[i.dataset.fxk]});
   p.querySelectorAll('[data-fxp]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.fxp===cur?'true':'false'));
   p.querySelector('[data-fxs]').textContent=cur==='custom'?'Custom mix':cur[0].toUpperCase()+cur.slice(1)+' preset';
+  demoSync();
 };
 const place=()=>{
   if(!open)return;

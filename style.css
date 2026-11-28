@@ -852,3 +852,14 @@ html[data-fx-glow="0"] .tile img,html[data-fx-glow="0"] .mdl,html[data-fx-glow="
 html[data-fx-art="0"] .hero{background:radial-gradient(120% 90% at 50% 0%,#2b303b,#0b0c10 72%)}
 html[data-fx-art="0"] .L-bg,html[data-fx-art="0"] .L-fg,html[data-fx-art="0"] .L-fog,html[data-fx-art="0"] .hero::before,html[data-fx-art="0"] .orb{display:none}
 html[data-fx-art="0"] .hero .t1{filter:none}
+/* settings panel: demo data section */
+.fxdemo{margin-top:12px;padding-top:14px;border-top:1px solid var(--line)}
+.fxdh{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fxdh b{font-size:14px;font-weight:800}
+.fxdh span{font-size:12px;color:var(--mute)}
+.fxp .fxdemo .fxs{margin:4px 0 10px}
+.fxdf{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;font-size:12px;color:var(--mute)}
+.fxp .fxdf button{flex:none;width:auto;margin:0;padding:6px 10px;border:1px solid var(--line);border-radius:99px;background:none;color:var(--ink);font:600 12px/1 Inter,system-ui,sans-serif;cursor:pointer}
+.fxp .fxdf button:hover{border-color:var(--ink)}
+.fxp .fxseg button:disabled,.fxp .fxdf button:disabled{opacity:.4;cursor:not-allowed}
+.fxp .fxseg button:disabled:hover,.fxp .fxdf button:disabled:hover{border-color:var(--line)}
