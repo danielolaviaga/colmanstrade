@@ -2,7 +2,38 @@
    All <script> blocks from the original page, in the original order.
    Loaded as a classic (non-module) script so inline onclick="..." handlers still find these globals. */
 
-/* Motion note: reduced-motion checks are forced off so animations and effects play on desktop too. */
+/* Motion note: the device's reduced-motion setting is not used. Animations and effects play by default;
+   visitors can turn them down with the settings button in the header (see FX, script 0). */
+
+/* ===== script 0: display settings (core) ===== */
+/* Visitor choices for graphics and effects, saved in this browser (cm-fx).
+   They are applied here, before the page draws, as data-fx-* attributes on <html>: a group set to "0" is switched off.
+   style.css reads the attributes (see "display settings" at the end of that file); the effect code below asks FX.on('name').
+   Groups: anim, hero (scroll effects), mouse, snow, glow (blur and glow), art (background artwork). */
+window.FX=(()=>{
+const KEY='cm-fx',NAMES=['anim','hero','mouse','snow','glow','art'];
+const PRESETS={
+  full:{anim:1,hero:1,mouse:1,snow:1,glow:1,art:1},
+  reduced:{anim:0,hero:0,mouse:0,snow:0,glow:1,art:1},
+  minimal:{anim:0,hero:0,mouse:0,snow:0,glow:0,art:0}};
+const subs=[],root=document.documentElement;
+let s={...PRESETS.full};
+try{const r=JSON.parse(localStorage.getItem(KEY)||'null');if(r&&typeof r==='object')NAMES.forEach(k=>{if(k in r)s[k]=r[k]?1:0})}catch(e){}
+const apply=()=>{NAMES.forEach(k=>root.setAttribute('data-fx-'+k,s[k]?'1':'0'));subs.forEach(f=>{try{f({...s})}catch(e){}})};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}};
+const api={
+  names:NAMES,
+  on:k=>!!s[k],
+  get:()=>({...s}),
+  set(k,v){if(!(k in s))return;s[k]=v?1:0;save();apply()},
+  preset(n){if(!PRESETS[n])return;s={...PRESETS[n]};save();apply()},
+  current:()=>Object.keys(PRESETS).find(n=>NAMES.every(k=>PRESETS[n][k]===s[k]))||'custom',
+  subscribe:f=>{subs.push(f)},
+  /* stands in for matchMedia('(prefers-reduced-motion: reduce)'): true while Animations is off */
+  rm:{get matches(){return !s.anim}}
+};
+apply();
+return api})();
 
 /* ===== script 1: main-1 ===== */
 const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'),
@@ -200,7 +231,7 @@ tick=()=>{const y=scrollY,h=innerHeight;document.querySelectorAll('[data-sy]').f
 fx=()=>{document.querySelectorAll('.rv:not(.in)').forEach(e=>io?io.observe(e):show(e));document.querySelectorAll('[data-r]:not([data-o])').forEach(e=>{e.dataset.o=1;if(ior)ior.observe(e)});tick()};
 const hot=()=>uniq(S.products.filter(p=>p.was)).slice(0,8).map((p,i)=>`<div class="prod rv" style="--d:${(i%4)*.1}s"><div class="tile">${pic(p)}</div><span class="off">-${Math.round(100-p.price/p.was*100)}%</span><b>${esc(base(p))}</b><div class="row"><span>${price(p)}</span><button class="add" aria-label="Add ${esc(p.name)} to cart" onclick="chg('${p.id}',1);toast('Added to cart')">+</button></div></div>`).join('');
 let lt=null;
-addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const h=$('#hero');if(h){const r=h.getBoundingClientRect();if(e.clientY>r.top&&e.clientY<r.bottom){const x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;h.style.setProperty('--mx',(x-.5)*2);h.style.setProperty('--my',(y-.5)*2);h.style.setProperty('--gx',x*100+'%');h.style.setProperty('--gy',y*100+'%')}}
+addEventListener('pointermove',e=>{if(e.pointerType==='touch'||!FX.on('mouse'))return;const h=$('#hero');if(h){const r=h.getBoundingClientRect();if(e.clientY>r.top&&e.clientY<r.bottom){const x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;h.style.setProperty('--mx',(x-.5)*2);h.style.setProperty('--my',(y-.5)*2);h.style.setProperty('--gx',x*100+'%');h.style.setProperty('--gy',y*100+'%')}}
 const t=e.target.closest&&e.target.closest('.prod .tile,.dc .tile');if(lt&&lt!==t){lt.style.transform='';lt=null}
 if(t){const r=t.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;t.style.transform=`perspective(700px) rotateY(${x*14}deg) rotateX(${-y*14}deg) scale(1.04)`;lt=t}});
 addEventListener('scroll',()=>requestAnimationFrame(tick),{passive:true});
@@ -224,7 +255,7 @@ NAV.admin=[...NAV.staff,['users','Users']];NAV.guest=[['home','Home'],['shop','S
 const nav=k=>{view=k;go();scrollTo(0,0)};
 function go(){const u=me(),n=NAV[u.role],au=view==='login'&&u.role==='guest';if(!au&&!n.some(x=>x[0]===view))view=n[0][0];tg(0);const cu=u.role==='customer'||u.role==='guest',sh=cu&&(view==='home'||view==='shop');
 if(au){$('#app').innerHTML=V.login();scrollTo(0,0);return}
-$('#app').innerHTML=`${sh?'<div class="top"><span>Pickup · Delivery · Deals</span><span>New drops every week</span><span>IG · FB · TikTok</span></div>':''}<header><div class="brand"><b>COLMANS</b></div><nav>${n.map(([k,l])=>`<button ${k===view?'aria-current="page"':''} onclick="nav('${k}')">${l}</button>`).join('')}</nav>${u.role==='guest'?'<button class="btn sm" onclick="nav(\'login\')">Sign in</button>':`<div class="who"><b>${esc(u.name)}</b><small>${u.role}</small></div><button class="btn ghost sm" onclick="out()">Sign out</button>`}<button class="tgl" aria-label="Toggle light and dark theme" onclick="tm(event)">◐</button>${sh?`<button class="cartpill" onclick="tg(1)">Cart <span id="cc">${cn()} items</span></button>`:''}</header><main>${V[view]()}</main>${cu?`<div class="scrim" onclick="tg(0)"></div><aside class="drawer" id="cart">${cartH()}</aside>`:''}${footH(cu)}`;pre=pres='';fx();typeof adSync==='function'&&adSync()}
+$('#app').innerHTML=`${sh?'<div class="top"><span>Pickup · Delivery · Deals</span><span>New drops every week</span><span>IG · FB · TikTok</span></div>':''}<header><div class="brand"><b>COLMANS</b></div><nav>${n.map(([k,l])=>`<button ${k===view?'aria-current="page"':''} onclick="nav('${k}')">${l}</button>`).join('')}</nav>${u.role==='guest'?'<button class="btn sm" onclick="nav(\'login\')">Sign in</button>':`<div class="who"><b>${esc(u.name)}</b><small>${u.role}</small></div><button class="btn ghost sm" onclick="out()">Sign out</button>`}<button class="tgl fxbtn" aria-label="Display and effects settings" title="Display &amp; effects" aria-haspopup="dialog" aria-expanded="false" onclick="fxToggle()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button><button class="tgl" aria-label="Toggle light and dark theme" onclick="tm(event)">◐</button>${sh?`<button class="cartpill" onclick="tg(1)">Cart <span id="cc">${cn()} items</span></button>`:''}</header><main>${V[view]()}</main>${cu?`<div class="scrim" onclick="tg(0)"></div><aside class="drawer" id="cart">${cartH()}</aside>`:''}${footH(cu)}`;pre=pres='';fx();typeof adSync==='function'&&adSync()}
 
 /* ===== script 2: admin ===== */
 /* ================= ADMIN WORKSPACE (staff + admin) =================
@@ -535,7 +566,7 @@ go();
 
 /* ===== script 4: main-4 ===== */
 /* hero choreography: one passive scroll listener -> one rAF -> a few CSS variables (--p pin progress, --q cover progress) + snow */
-(()=>{const rm=({matches:false});let h,hh=0,hd,ho,af,afTop=0,raf=0,lastY=0,V=0;
+(()=>{const rm=FX.rm;let h,hh=0,hd,ho,af,afTop=0,raf=0,lastY=0,V=0;
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),Y=()=>window.pageYOffset||document.documentElement.scrollTop||document.body.scrollTop||0;
 const find=()=>{hd=document.querySelector('header');document.documentElement.style.setProperty('--hdr',(hd?hd.offsetHeight:65)+'px');h=document.getElementById('hero');hh=h?h.offsetHeight:0;ho=document.querySelector('.hold');af=document.querySelector('.after');afTop=af?af.getBoundingClientRect().top+Y():0};
 const bar=document.createElement('i');bar.id='pgbar';bar.setAttribute('aria-hidden','true');document.body.appendChild(bar);
@@ -546,7 +577,7 @@ const app=document.getElementById('app');if(app)new MutationObserver(()=>{h=null
 /* snow: soft flakes in depth layers; they streak with scroll speed and pause when hidden, covered or reduced-motion */
 let cv=null,cx,W=0,H=0,fl=[],last=0;
 const initSnow=()=>{cv=h&&h.querySelector('.L-snow');if(!cv)return;const r=cv.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,1.5);W=r.width;H=r.height;cv.width=W*d;cv.height=H*d;cx=cv.getContext('2d');cx.setTransform(d,0,0,d,0,0);fl=Array.from({length:W<700?34:72},()=>({x:Math.random()*W,y:Math.random()*H,z:.25+Math.random()*.75,s:Math.random()*6}))};
-const tick=t=>{requestAnimationFrame(tick);V*=.9;if(document.hidden||!h||!h.isConnected||+h.style.getPropertyValue('--q')>.97)return;if(!cv||!cv.isConnected){initSnow();if(!cv)return}const dt=Math.min(.05,(t-last)/1000||0);last=t;cx.clearRect(0,0,W,H);cx.fillStyle='#fff';for(const f of fl){const calm=rm.matches;f.y+=(16+46*f.z)*dt*(calm?.5:1)-(calm?0:V*f.z*.9);f.x+=Math.sin(t*.0006+f.s)*9*dt*f.z*(calm?.5:1);if(f.y>H+4){f.y=-4;f.x=Math.random()*W}else if(f.y<-4){f.y=H+4;f.x=Math.random()*W}if(f.x>W+4)f.x=-4;else if(f.x<-4)f.x=W+4;cx.globalAlpha=.22+.6*f.z;cx.beginPath();cx.arc(f.x,f.y,.7+2*f.z,0,6.2832);cx.fill()}};
+const tick=t=>{requestAnimationFrame(tick);V*=.9;if(document.hidden||!h||!h.isConnected||+h.style.getPropertyValue('--q')>.97||!FX.on('snow'))return;if(!cv||!cv.isConnected){initSnow();if(!cv)return}const dt=Math.min(.05,(t-last)/1000||0);last=t;cx.clearRect(0,0,W,H);cx.fillStyle='#fff';for(const f of fl){const calm=rm.matches;f.y+=(16+46*f.z)*dt*(calm?.5:1)-(calm?0:V*f.z*.9);f.x+=Math.sin(t*.0006+f.s)*9*dt*f.z*(calm?.5:1);if(f.y>H+4){f.y=-4;f.x=Math.random()*W}else if(f.y<-4){f.y=H+4;f.x=Math.random()*W}if(f.x>W+4)f.x=-4;else if(f.x<-4)f.x=W+4;cx.globalAlpha=.22+.6*f.z;cx.beginPath();cx.arc(f.x,f.y,.7+2*f.z,0,6.2832);cx.fill()}};
 requestAnimationFrame(tick);req()})();
 
 /* ===== script 5: main-5 ===== */
@@ -572,7 +603,7 @@ const app=document.getElementById('app');if(app)new MutationObserver(enh).observ
 
 /* ===== script 6: qv ===== */
 /* product viewer: the card's photo zooms into a detail panel (FLIP via Web Animations) and zooms back on close */
-(()=>{const rm=({matches:false}),EASE='cubic-bezier(.2,.8,.2,1)',dur=ms=>rm.matches?Math.round(ms*.55):ms;
+(()=>{const rm=FX.rm,EASE='cubic-bezier(.2,.8,.2,1)',dur=ms=>rm.matches?0:ms;
 const DESC={'discipline oversized tee':'Black oversized tee with a small DISCIPLINE mark on the chest and a full-back statue print. Relaxed, boxy fit for everyday wear.','blindfold king hoodie':'Black hoodie with SUPREME lettering on the front and a crowned, blindfolded figure across the back. Heavyweight streetwear cut.','focus samurai hoodie':'Black hoodie with a small FOCUS mark on the chest and a kneeling samurai in red flames across the back.','black pullover hoodie':'Classic black pullover hoodie with a kangaroo pocket, a drawstring hood and a small chest logo.','white essential tee':'Clean white crew-neck tee with a small chest logo. An easy everyday layer.','faded graphic tee':'Washed charcoal tee with a bold star graphic on the chest. A lived-in, faded look.','beige zip-up hoodie':'Beige hoodie with a front pocket and a drawstring hood. A neutral layer that goes with everything.','wide-leg denim jeans':'Light-wash wide-leg jeans with a relaxed, straight fall.','white low-top sneakers':'All-white low-top sneakers with a cushioned sole. A clean look that goes with everything.','black and white high-tops':'High-top sneakers in black and white with a bold contrast panel.','black canvas skate shoes':'Black canvas skate shoes with white laces and a side stripe on a flat sole.','beige slides':'Easy beige slides with a moulded footbed for slip-on comfort.','black wayfarer sunglasses':'Classic black wayfarer sunglasses with dark lenses.','clear frame glasses':'Lightweight clear-frame glasses with a clean, minimal shape.','black baseball cap':'Black baseball cap with an embroidered front logo and a curved brim.','off-white baseball cap':'Off-white baseball cap with an embroidered front logo and a curved brim.','silver chain bracelet':'Silver-tone chunky chain bracelet.','silver pendant necklace':'Silver-tone chain with a rectangular cross pendant.','beaded cross bracelet':'Black beaded bracelet with a small silver cross charm.','black digital watch':'Rugged black digital watch with a bold dial and a wide strap.','black leather belt':'Black leather belt with a silver buckle.','black leather wallet':'Slim black leather bifold wallet with a small metal logo.','black backpack':'Black everyday backpack with a front pocket and two zip compartments.','cream shoulder bag':'Cream shoulder bag with a slim top handle and a small metal plate detail.','wireless earbuds':'Wireless earbuds that come with a compact charging case.','over-ear headphones':'Black over-ear headphones with cushioned ear cups.','smartphone with black case':'Smartphone in a matte black case with a triple-camera back.','smartphone pro (graphite)':'Graphite smartphone with a triple-camera system and a full-screen display.','gaming laptop 15-inch':'15-inch gaming laptop built for games and for work.','wireless gaming mouse':'Wireless gaming mouse with a lightweight shell.','rgb mechanical keyboard':'Compact mechanical keyboard with RGB backlighting.','wireless game controller':'White wireless game controller with a comfortable grip.','portable speaker (black)':'Portable wireless speaker in black with a rugged fabric finish.','portable speaker (white)':'Portable wireless speaker in white with a rugged fabric finish.','action camera':'Compact action camera with a front display, made for filming on the move.','mirrorless camera':'Mirrorless camera with a zoom lens, for sharp photos and video.','charger and usb-c cable':'Wall charger with a white USB-C cable.','power bank 10,000mah':'10,000mAh power bank to top up your phone on the go.','gaming mouse pad (black)':'Black cloth gaming mouse pad with a smooth surface.','extended desk mat (black)':'Extra-wide black desk mat with room for your keyboard and mouse.','foldable laptop stand':'Foldable black laptop stand that lifts your screen and packs flat.','gaming chair':'Black racing-style gaming chair with a high back.','compact printer':'Compact desktop printer for documents at home or in the shop.','compact keyboard (lilac)':'Compact lilac keyboard with a clean, colourful layout.','24-inch monitor':'24-inch monitor with a slim frame.','desktop soundbar':'Slim black soundbar that fits under your monitor.','vr headset':'Virtual-reality headset that comes with two hand controllers.','canned iced coffee':'Chilled canned iced coffee, ready to drink.','potato chips 60g':'Crunchy potato chips in a 60 g pack.','milk chocolate bar':'Smooth milk chocolate bar.','bottled water 500ml':'500 ml bottled drinking water.','tissue roll (4 pack)':'Soft tissue rolls in a pack of four.','toothbrush and paste set':'Toothbrush and toothpaste set for daily care.','aa batteries (4 pack)':'Pack of four AA batteries.','compact umbrella':'Compact umbrella that folds small to fit in your bag.'};
 const CATD={'Clothing':'Streetwear for everyday wear.','Footwear':'Comfortable footwear for daily use.','Accessories':'A finishing touch for any outfit.','Bags':'Carry your essentials in style.','Gadgets':'Tech for work, play and everything in between.','Groceries':'Everyday groceries, snacks and drinks.','Essentials':'Daily essentials you always need.'};
 let st=null;
@@ -637,7 +668,7 @@ document.documentElement.addEventListener('pointerleave',hide)})();
 
 /* ===== script 8: dash-js ===== */
 /* dashboard: count-up numbers and the bar, chart and donut grow-in, once per render */
-(()=>{const rm=({matches:false});
+(()=>{const rm=FX.rm;
 const run=()=>{const d=document.querySelector('.dash');if(!d||d.dataset.run)return;d.dataset.run='1';
 d.querySelectorAll('[data-count]').forEach(el=>{const n=+el.dataset.count,money=el.dataset.kind==='money',f=v=>money?peso(v):Math.round(v),t0=performance.now(),D=rm.matches?500:1200;el.textContent=f(0);
 const tick=t=>{const k=Math.min(1,(t-t0)/D),e=1-Math.pow(1-k,3);el.textContent=f(n*e);if(k<1)requestAnimationFrame(tick)};requestAnimationFrame(tick)});
@@ -645,7 +676,7 @@ requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add('go')))};
 const app=document.getElementById('app');if(app)new MutationObserver(run).observe(app,{childList:true});run()})();
 
 /* ===== script 9: main-9 ===== */
-document.addEventListener('click',e=>{const b=e.target.closest('[data-car]'),c=document.getElementById('car');if(b&&c)c.scrollBy({left:c.firstElementChild.offsetWidth*+b.dataset.car*1.1,behavior:({matches:false}).matches?'auto':'smooth'})});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-car]'),c=document.getElementById('car');if(b&&c)c.scrollBy({left:c.firstElementChild.offsetWidth*+b.dataset.car*1.1,behavior:FX.rm.matches?'auto':'smooth'})});
 document.addEventListener('scroll',e=>{const c=e.target;if(c&&c.id==='car'){const m=c.scrollWidth-c.clientWidth;c.parentElement.style.setProperty('--p',m>0?c.scrollLeft/m:0)}},true);
 /* Featured slider: always start in the middle, each time the home page is drawn */
 (()=>{const mid=()=>{const c=document.getElementById('car');if(!c||c.dataset.mid)return;const m=c.scrollWidth-c.clientWidth;if(m<=0)return;c.dataset.mid=1;c.scrollTo({left:m/2,behavior:'instant'});c.parentElement.style.setProperty('--p',.5)};new MutationObserver(mid).observe(document.getElementById('app'),{childList:true,subtree:true});mid()})();
@@ -696,7 +727,7 @@ addEventListener('resize',()=>sched(150));if(document.fonts&&document.fonts.read
    Sign in  -> left half slides in from the left, right half from the right, they meet in the middle and puff a little smoke.
    Back to shop (or after a successful sign-in) -> the two halves slide apart again, like a sliding door opening onto the page. */
 (()=>{
-const DUR=900,EASE='cubic-bezier(.55,0,.25,1)',RM=({matches:false});
+const DUR=900,EASE='cubic-bezier(.55,0,.25,1)',RM=FX.rm;
 const q=s=>document.querySelector(s),rnd=(a,b)=>a+Math.random()*(b-a);
 const mk=(css,cls)=>{const d=document.createElement('div');if(cls)d.className=cls;d.style.cssText=css||'';return d};
 let live=[],nodes=[],timers=[],wasLogin=false;
@@ -849,7 +880,7 @@ function supSlider(){
    Browsers without it get a soft colour fade instead. Reduced-motion users get an instant switch. */
 function themeSwap(apply,ev){
   const root=document.documentElement;
-  if(({matches:false}).matches){apply();return}
+  if(FX.rm.matches){apply();return}
   const t=ev&&ev.currentTarget,btn=t&&t.getBoundingClientRect?t:document.querySelector('.tgl');
   if(btn&&btn.animate)btn.animate([{rotate:'0deg'},{rotate:'360deg'}],{duration:600,easing:'cubic-bezier(.2,.8,.2,1)'});
   if(typeof document.startViewTransition==='function'){
@@ -882,4 +913,74 @@ function themeSwap(apply,ev){
   /* the page tags <main data-v="shop"> a moment after each render, which is when the chips become a sideways row */
   const app=document.getElementById('app');
   if(app&&window.MutationObserver)new MutationObserver(reveal).observe(app,{subtree:true,attributes:true,attributeFilter:['data-v']});
+})();
+
+/* ===== script 15: display settings panel ===== */
+/* The settings button in the header (next to Sign in) opens this panel. Choices are stored by FX (script 0). */
+(()=>{
+const ROWS=[
+  ['anim','Animations','Entrances, fades, slides and transitions'],
+  ['hero','Scroll effects','Parallax and zoom while you scroll'],
+  ['mouse','Mouse effects','Cursor glow, 3D tilt and hover lifts'],
+  ['snow','Falling snow','Particles over the hero'],
+  ['glow','Blur & glow','Frosted blur, soft glows and shadows'],
+  ['art','Background artwork','Hero scenery and the rough title texture']];
+const PRE=[['full','Full','Everything on'],['reduced','Reduced','No motion'],['minimal','Minimal','Lightest']];
+let p=null,open=false;
+const build=()=>{
+  p=document.createElement('div');p.id='fxp';p.className='fxp';p.hidden=true;
+  p.setAttribute('role','dialog');p.setAttribute('aria-labelledby','fxt');
+  p.innerHTML=`<div class="fxh"><b id="fxt">Display &amp; effects</b><button type="button" class="fxx" data-fxc aria-label="Close settings">×</button></div>
+<p class="fxs">Turn graphics and effects down if the site feels slow or busy. Saved on this device.</p>
+<div class="fxseg" role="group" aria-label="Quick presets">${PRE.map(([k,t,d])=>`<button type="button" data-fxp="${k}" aria-pressed="false"><b>${t}</b><small>${d}</small></button>`).join('')}</div>
+<div class="fxlist">${ROWS.map(([k,t,d])=>`<label class="fxrow"><span class="fxl"><b>${t}</b><small>${d}</small></span><input type="checkbox" role="switch" data-fxk="${k}"><i class="fxsw" aria-hidden="true"></i></label>`).join('')}</div>
+<div class="fxf"><span data-fxs></span><button type="button" data-fxr>Reset to Full</button></div>`;
+  document.body.appendChild(p);
+  p.addEventListener('click',e=>{
+    const t=e.target.closest('[data-fxp],[data-fxr],[data-fxc]');if(!t)return;
+    if(t.dataset.fxp)FX.preset(t.dataset.fxp);
+    else if(t.hasAttribute('data-fxr'))FX.preset('full');
+    else close(true)});
+  p.addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.fxk;if(k)FX.set(k,e.target.checked)});
+};
+const sync=()=>{
+  if(!p)return;
+  const s=FX.get(),cur=FX.current();
+  p.querySelectorAll('[data-fxk]').forEach(i=>{i.checked=!!s[i.dataset.fxk]});
+  p.querySelectorAll('[data-fxp]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.fxp===cur?'true':'false'));
+  p.querySelector('[data-fxs]').textContent=cur==='custom'?'Custom mix':cur[0].toUpperCase()+cur.slice(1)+' preset';
+};
+const place=()=>{
+  if(!open)return;
+  const h=document.querySelector('header'),top=Math.max(8,Math.round((h?h.getBoundingClientRect().bottom:60)+8));
+  p.style.top=top+'px';p.style.maxHeight=Math.max(240,innerHeight-top-12)+'px';
+};
+const mark=()=>document.querySelectorAll('.fxbtn').forEach(b=>b.setAttribute('aria-expanded',open?'true':'false'));
+const openP=()=>{
+  if(!p)build();
+  open=true;sync();p.hidden=false;place();mark();
+  const f=p.querySelector('[data-fxp][aria-pressed="true"]')||p.querySelector('button');
+  if(f)f.focus({preventScroll:true});
+};
+const close=back=>{
+  if(!open)return;
+  open=false;p.hidden=true;mark();
+  if(back){const b=document.querySelector('.fxbtn');if(b)b.focus({preventScroll:true})}
+};
+window.fxToggle=()=>{open?close(true):openP()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&open){e.stopPropagation();close(true)}},true);
+document.addEventListener('pointerdown',e=>{if(open&&!e.target.closest('#fxp,.fxbtn'))close(false)},true);
+addEventListener('resize',place);
+addEventListener('scroll',place,{passive:true,capture:true});
+FX.subscribe(s=>{
+  sync();
+  /* switching Mouse effects off: put back anything the cursor had moved */
+  if(!s.mouse){
+    document.querySelectorAll('.prod .tile,.dc .tile').forEach(t=>{t.style.transform=''});
+    const h=document.getElementById('hero');
+    if(h)['--mx','--my','--gx','--gy'].forEach(v=>h.style.removeProperty(v));
+  }
+});
+const app=document.getElementById('app');
+if(app)new MutationObserver(mark).observe(app,{childList:true});
 })();

@@ -1,8 +1,8 @@
 /* Colmans Online Ordering and Trade System - stylesheet
    All <style> blocks from the original page, in the original order (cascade preserved). */
 
-/* Motion note: the prefers-reduced-motion overrides were removed so every animation and effect plays on desktop too
-   (many PCs report "reduce motion" because Windows animation effects are off or power saver is on). */
+/* Motion note: the device's reduced-motion setting is not used (many PCs report it because Windows animation effects are off
+   or power saver is on). Effects play by default; visitors turn them down with the settings button, see "display settings" at the end. */
 
 /* ===== base ===== */
 :root{--bg:#f2f2f2;--card:#fff;--ink:#0b0b0b;--mute:#5c5c5c;--line:#dcdcdc;--pu:#e8163f;--pu-ink:#fff;--soft:#ebebeb;--dk:#0b0b0b;--ok:#1f7a4d;--warn:#946512;--bad:#c4122f;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -780,3 +780,75 @@ html.theme-fade,html.theme-fade *,html.theme-fade *::before,html.theme-fade *::a
 /* ===== hero hides once the page has slid fully over it ===== */
 /* The pinned hero stays behind the page. At the very bottom its lower edge and loading bar used to peek out under the last section. */
 .hero{opacity:clamp(0,calc((1 - var(--q,0))*1000),1)}
+
+/* ===== display settings (graphics and effects) ===== */
+/* The settings button in the header opens a panel where visitors turn effects down. script.js (FX) sets
+   data-fx-anim / hero / mouse / snow / glow / art = "0" on <html> for every group that is switched off. */
+
+/* header button + panel */
+.fxbtn{display:inline-grid;place-items:center;padding:0}
+.fxbtn svg{width:17px;height:17px;display:block}
+.fxbtn[aria-expanded="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.fxp{position:fixed;z-index:70;top:72px;right:14px;width:min(370px,calc(100vw - 20px));box-sizing:border-box;overflow:auto;overscroll-behavior:contain;padding:16px;border:1px solid var(--line);border-radius:20px;background:var(--card);color:var(--ink);box-shadow:0 24px 60px rgba(0,0,0,.45);font:14px/1.45 Inter,system-ui,sans-serif;text-align:left;animation:fxin .18s ease-out}
+.fxp[hidden]{display:none}
+@keyframes fxin{from{opacity:0;translate:0 -6px}}
+.fxp *{box-sizing:border-box}
+.fxh{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fxh b{font-size:16px;font-weight:800;letter-spacing:.01em}
+.fxp .fxx{width:30px;height:30px;padding:0;border:1px solid var(--line);border-radius:50%;background:none;color:var(--ink);font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.fxp .fxx:hover{background:var(--soft)}
+.fxp .fxs{margin:6px 0 14px;color:var(--mute);font-size:13px}
+.fxseg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.fxp .fxseg button{display:grid;gap:2px;width:auto;margin:0;padding:9px 6px;border:1px solid var(--line);border-radius:12px;background:none;color:var(--ink);font:inherit;text-align:center;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.fxseg b{font-size:13px;font-weight:700}
+.fxseg small{font-size:11px;color:var(--mute)}
+.fxp .fxseg button:hover{border-color:var(--ink)}
+.fxp .fxseg button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.fxp .fxseg button[aria-pressed="true"] small{color:inherit;opacity:.7}
+.fxlist{margin-top:10px}
+.fxp .fxrow{position:relative;display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0;padding:11px 2px;border-top:1px solid var(--line);cursor:pointer}
+.fxrow:first-child{border-top:0}
+.fxl{display:grid;gap:1px;min-width:0}
+.fxl b{font-size:14px;font-weight:700}
+.fxl small{font-size:12px;color:var(--mute)}
+.fxp .fxrow input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer}
+.fxsw{flex:none;position:relative;width:42px;height:24px;border-radius:99px;border:1px solid var(--line);background:var(--soft);transition:background .2s,border-color .2s}
+.fxsw::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--mute);transition:translate .2s,background .2s}
+.fxrow input:checked+.fxsw{background:var(--ink);border-color:var(--ink)}
+.fxrow input:checked+.fxsw::after{translate:18px 0;background:var(--bg)}
+.fxrow input:focus-visible+.fxsw,.fxp button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.fxf{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--mute)}
+.fxp .fxf button{width:auto;margin:0;padding:6px 10px;border:1px solid var(--line);border-radius:99px;background:none;color:var(--ink);font:600 12px/1 Inter,system-ui,sans-serif;cursor:pointer}
+.fxp .fxf button:hover{border-color:var(--ink)}
+@media (max-width:600px){.fxp{left:10px;right:10px;width:auto;padding:14px;border-radius:18px}}
+/* phones: tighter header so the extra button does not push the Cart pill onto another row */
+@media (max-width:600px){header{column-gap:6px}header .tgl{width:30px;height:30px}.fxbtn svg{width:16px;height:16px}}
+
+/* Animations off: no animation or transition anywhere, scroll reveals show at once */
+html[data-fx-anim="0"]{scroll-behavior:auto!important}
+html[data-fx-anim="0"] *,html[data-fx-anim="0"] *::before,html[data-fx-anim="0"] *::after{animation:none!important;transition:none!important}
+html[data-fx-anim="0"] .rv{opacity:1;transform:none}
+
+/* Scroll effects off: hero parallax/zoom and scroll-driven shifts stand still (--p is the hero's scroll progress) */
+html[data-fx-hero="0"] .hero{--p:0!important;--k:0!important}
+html[data-fx-hero="0"] [data-sy],html[data-fx-hero="0"] [data-py],html[data-fx-hero="0"] [data-px],html[data-fx-hero="0"] .giant,html[data-fx-hero="0"] .dcards{translate:none!important}
+
+/* Mouse effects off: no cursor glow, no hover lifts or zooms (the 3D tilt is switched off in script.js) */
+html[data-fx-mouse="0"] .hero::after{display:none}
+html[data-fx-mouse="0"] .dc:hover,html[data-fx-mouse="0"] .btn:not(:disabled):hover,html[data-fx-mouse="0"] .pz-cta:hover,html[data-fx-mouse="0"] .pz-more:hover{translate:none!important}
+html[data-fx-mouse="0"] .cc:hover img,html[data-fx-mouse="0"] .ft .l:hover,html[data-fx-mouse="0"] .ft .soc a:hover,html[data-fx-mouse="0"] .prod:hover .tile img:not(.alt),html[data-fx-mouse="0"] .qv-thumbs button:hover,html[data-fx-mouse="0"] .qv-rel button:hover,html[data-fx-mouse="0"] .qv-x:hover,html[data-fx-mouse="0"] .adw-x:hover,html[data-fx-mouse="0"] .dh-btn:hover,html[data-fx-mouse="0"] .dk:hover,html[data-fx-mouse="0"] .dpipe:hover,html[data-fx-mouse="0"] .ad-row:hover,html[data-fx-mouse="0"] .ad-bc:hover,html[data-fx-mouse="0"] .ad-pc:hover,html[data-fx-mouse="0"] .ad-click:hover,html[data-fx-mouse="0"] .card.ad-click:hover .sup-th img,html[data-fx-mouse="0"] .sws button:hover,html[data-fx-mouse="0"] .qv-col button:hover{transform:none!important}
+
+/* Falling snow off */
+html[data-fx-snow="0"] .L-snow{display:none}
+
+/* Blur & glow off: no frosted blur, no coloured glows, no drop shadows on pictures */
+html:root[data-fx-glow="0"]{--glow:transparent;--glow2:transparent}
+html[data-fx-glow="0"]::before,html[data-fx-glow="0"]::after{display:none}
+html[data-fx-glow="0"] *,html[data-fx-glow="0"] *::before,html[data-fx-glow="0"] *::after{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html[data-fx-glow="0"] header{background:var(--bg)}
+html[data-fx-glow="0"] .tile img,html[data-fx-glow="0"] .mdl,html[data-fx-glow="0"] .ap img,html[data-fx-glow="0"] .qv-stage img,html[data-fx-glow="0"] .qv-ghost,html[data-fx-glow="0"] .hl i img,html[data-fx-glow="0"] .pz-pic img{filter:none!important}
+
+/* Background artwork off: the hero becomes a plain dark panel with the title on it */
+html[data-fx-art="0"] .hero{background:radial-gradient(120% 90% at 50% 0%,#2b303b,#0b0c10 72%)}
+html[data-fx-art="0"] .L-bg,html[data-fx-art="0"] .L-fg,html[data-fx-art="0"] .L-fog,html[data-fx-art="0"] .hero::before,html[data-fx-art="0"] .orb{display:none}
+html[data-fx-art="0"] .hero .t1{filter:none}
